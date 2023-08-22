@@ -18,7 +18,7 @@ const defaultFormFields = {
 
 const SignInForm = () => {
   const [formFields, setFormFields] = useState(defaultFormFields);
-  const { email, password ,confirmPassword} = formFields;
+  const { email, password } = formFields;
 
   const resetFormField = () => {
     setFormFields(defaultFormFields);
@@ -37,16 +37,12 @@ const SignInForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if(password !== confirmPassword){
-        alert("passwords do not match")
-        return;
-    }
-
-
     try {
-      await signInAuthUserWithEmailAndPassword(email, password);
+      const { user } = await signInAuthUserWithEmailAndPassword(
+        email,
+        password
+      );
       resetFormField();
-      //console.log("done");
     } catch (error) {
       switch (error.code) {
         case "auth/wrong-password":
