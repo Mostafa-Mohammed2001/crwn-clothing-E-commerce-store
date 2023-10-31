@@ -7,14 +7,18 @@ import {
   GoogleAuthProvider,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
 } from "firebase/auth";
 
 import {
   getFirestore, // get the database
   doc, //get the document instance
   getDoc, // get the document data
-  setDoc, // set the document data
+  setDoc,
+  collection,
+  writeBatch,
+  query,
+  getDocs, // set the document data
 } from "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -45,6 +49,33 @@ export const auth = getAuth();
 export const signInWithGooglePopup = () => signInWithPopup(auth, provider);
 
 export const db = getFirestore();
+
+export const addCollectionAndDocument = async (collectionkey, objectsToAdd) => {
+  const collectionRef = collection(db, collectionkey);
+  const batch = writeBatch(db);
+
+  objectsToAdd.forEach((object) => {
+    const docRef = doc(collectionRef, object.title.toLowerCase()); // because collectionRef holds the database
+    batch.set(docRef, object);
+  });
+  await batch.commit();
+  console.log("done");
+};
+
+
+// m4 fahem l logic
+export const getCategoriesAndDocuments = async () => {
+  const collectionRef = collection(db, "categories");
+  const q = query(collectionRef);
+
+  const querySnapshot = await getDocs(q);
+  const categoryMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
+    const { title, items } = docSnapshot.data();
+    acc[title.toLowerCase()] = items;
+    return acc;
+  }, {});
+  return categoryMap;
+};
 
 // check if the docment exists or not and if not exists => create a new one
 export const createUserDocumentFromAuth = async (userAuth, additionalInfo) => {
@@ -86,8 +117,8 @@ export const signInAuthUserWithEmailAndPassword = async (email, password) => {
   return await signInWithEmailAndPassword(auth, email, password);
 };
 
-export const signOutUser = async () => await signOut(auth)
+export const signOutUser = async () => await signOut(auth);
 
 export const onAuthStateChangedListener = (callback) => {
-  onAuthStateChanged(auth,callback)
-}
+  onAuthStateChanged(auth, callback);
+};
